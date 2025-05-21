@@ -109,7 +109,7 @@ public class ExerciseTimer extends JFrame {
 
                 // Khi hết thời gian giai đoạn hiện tại
                 if (timeLeft < 0) {
-                    Toolkit.getDefaultToolkit().beep();
+                    AudioPlayer.playBeep();
                     if (isExercisePhase) {
                         // Kết thúc giai đoạn tập 45s, chuyển sang nghỉ 15s
                         isExercisePhase = false;
