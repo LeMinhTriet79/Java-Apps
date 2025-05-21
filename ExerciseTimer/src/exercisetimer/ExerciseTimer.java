@@ -91,6 +91,12 @@ public class ExerciseTimer extends JFrame {
     }
 
     public static void main(String[] args) {
+          try {
+            // Áp dụng Look and Feel Windows Classic (gần giống Windows 98)
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         SwingUtilities.invokeLater(() -> {
             ExerciseTimer frame = new ExerciseTimer();
             frame.setVisible(true);
