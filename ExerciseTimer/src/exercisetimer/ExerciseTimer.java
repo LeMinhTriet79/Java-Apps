@@ -1,29 +1,32 @@
 package exercisetimer;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ExerciseTimer extends JFrame {
-    // Thành phần giao diện
-    private JLabel roundLabel;      // Hiển thị số hiệp
-    private JLabel timerLabel;      // Hiển thị số giây còn lại của bài tập
+    // Các thành phần giao diện
+    private JLabel roundLabel;      // Hiển thị số hiệp (round)
+    private JLabel timerLabel;      // Hiển thị đồng hồ số (digital timer)
     private JButton startButton;    // Nút “Bắt đầu”
     private JButton stopButton;     // Nút “Dừng”
     
-    // Timer cho digital timer và đồng hồ kim
-    private Timer exerciseTimer;    // Dùng để đếm ngược bài tập
-    private Timer clockTimer;       // Dùng để cập nhật giao diện đồng hồ kim mỗi giây
+    // Timer cho digital countdown và cập nhật đồng hồ kim
+    private Timer exerciseTimer;    
+    private Timer clockTimer;       
     
-    // Panel cho đồng hồ kim (vẽ analog clock)
+    // Panel hiển thị đồng hồ kim
     private ClockPanel clockPanel;
-
+    
     // Các biến của bài tập
-    private int round = 1;                // Số hiệp hiện tại
-    private int timeLeft = 45;            // Số giây còn lại của giai đoạn hiện tại
-    private int currentPhaseDuration = 45; // Tổng số giây của giai đoạn hiện tại (45 hoặc 15)
-    private boolean isExercisePhase = true; // true: giai đoạn tập (45s), false: giai đoạn nghỉ (15s)
+    private int round = 1;                
+    private int timeLeft = 45;            
+    private int currentPhaseDuration = 45; 
+    private boolean isExercisePhase = true;  
 
     public ExerciseTimer() {
         setTitle("Exercise Timer");
@@ -31,42 +34,64 @@ public class ExerciseTimer extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
-        // Panel trên (hiển thị số hiệp)
+        
+        // --- Panel trên: hiển thị số hiệp ---
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         roundLabel = new JLabel("Hiệp: " + round);
-        roundLabel.setFont(new Font("MS Sans Serif", Font.BOLD, 16));
+        roundLabel.setFont(new Font("Dialog", Font.BOLD, 20)); // Phóng to chữ "Hiệp"
         topPanel.add(roundLabel);
         add(topPanel, BorderLayout.NORTH);
-
-        // Panel giữa chia làm 2 cột: bên trái hiển thị digital timer, bên phải hiển thị analog clock
+        
+        // --- Panel giữa: chia làm 2 cột (digital timer và analog clock) ---
         JPanel centerPanel = new JPanel(new GridLayout(1, 2));
         
-        // Digital timer
+        // Digital timer (đồng hồ số)
         timerLabel = new JLabel(String.valueOf(timeLeft), SwingConstants.CENTER);
-        timerLabel.setFont(new Font("MS Sans Serif", Font.BOLD, 48));
+        // Sử dụng custom font cho digital timer, kích thước lớn (64f)
+        Font customFontLarge = FontLoader.loadCustomFont("BlockCraftMedium-PVLzd.otf", 80f);
+        if (customFontLarge != null) {
+            timerLabel.setFont(customFontLarge);
+        } else {
+            // Fallback nếu không tải được font tùy chỉnh
+            timerLabel.setFont(new Font("Dialog", Font.BOLD, 64));
+        }
+        timerLabel.setForeground(Color.BLACK); // Chữ đen trên nền sáng
         JPanel timerPanel = new JPanel(new BorderLayout());
         timerPanel.add(timerLabel, BorderLayout.CENTER);
+        // Đặt nền của panel digital timer thành màu xám trắng (light gray)
+        timerPanel.setBackground(Color.LIGHT_GRAY);
+        timerPanel.setOpaque(true);
+        
+        // Trang trí khung của digital timer theo phong cách Windows 98:
+        // Sử dụng viền bevel kèm theo tiêu đề "Digital Timer"
+        Border raisedBevel = BorderFactory.createBevelBorder(BevelBorder.RAISED);
+        Border emptyBorder = BorderFactory.createEmptyBorder(10, 10, 10, 10);
+        // Sử dụng custom font cho tiêu đề (Digital Timer) với kích thước nhỏ (14f)
+        Font customFontSmall = FontLoader.loadCustomFont("BlockCraftMedium-PVLzd.otf", 30f);
+        TitledBorder titledBorder = BorderFactory.createTitledBorder(raisedBevel, "Digital Timer");
+        if (customFontSmall != null) {
+            titledBorder.setTitleFont(customFontSmall);
+        }
+        Border compoundBorder = BorderFactory.createCompoundBorder(titledBorder, emptyBorder);
+        timerPanel.setBorder(compoundBorder);
+        
         centerPanel.add(timerPanel);
-
-        // Analog clock
+        
+        // Analog clock (đồng hồ kim)
         clockPanel = new ClockPanel();
         centerPanel.add(clockPanel);
         add(centerPanel, BorderLayout.CENTER);
-
-        // Panel dưới chứa nút “Bắt đầu” và “Dừng”
+        
+        // --- Panel dưới: chứa nút “Bắt đầu” và “Dừng” ---
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         startButton = new JButton("Bắt đầu");
-        startButton.setFont(new Font("MS Sans Serif", Font.BOLD, 16));
         bottomPanel.add(startButton);
-
         stopButton = new JButton("Dừng");
-        stopButton.setFont(new Font("MS Sans Serif", Font.BOLD, 16));
-        stopButton.setEnabled(false); // Vô hiệu hóa nút “Dừng” ban đầu
+        stopButton.setEnabled(false);  // Ban đầu, nút "Dừng" bị vô hiệu
         bottomPanel.add(stopButton);
         add(bottomPanel, BorderLayout.SOUTH);
-
-        // Sự kiện cho nút “Bắt đầu”
+        
+        // Xử lý sự kiện nút “Bắt đầu”
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -75,8 +100,8 @@ public class ExerciseTimer extends JFrame {
                 startExerciseTimer();
             }
         });
-
-        // Sự kiện cho nút “Dừng”
+        
+        // Xử lý sự kiện nút “Dừng”
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -87,8 +112,8 @@ public class ExerciseTimer extends JFrame {
                 }
             }
         });
-
-        // Timer cập nhật đồng hồ kim (vẽ lại mỗi 1 giây)
+        
+        // Timer cập nhật giao diện đồng hồ kim mỗi giây
         clockTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -97,26 +122,22 @@ public class ExerciseTimer extends JFrame {
         });
         clockTimer.start();
     }
-
-    // Phương thức khởi động exerciseTimer (digital countdown)
+    
+    // Phương thức khởi động timer đếm ngược (digital timer)
     private void startExerciseTimer() {
         exerciseTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Cập nhật digital timer
                 timerLabel.setText(String.valueOf(timeLeft));
                 timeLeft--;
-
-                // Khi hết thời gian giai đoạn hiện tại
+                
                 if (timeLeft < 0) {
-                    AudioPlayer.playBeep();
+                    Toolkit.getDefaultToolkit().beep();
                     if (isExercisePhase) {
-                        // Kết thúc giai đoạn tập 45s, chuyển sang nghỉ 15s
                         isExercisePhase = false;
                         currentPhaseDuration = 15;
                         timeLeft = 15;
                     } else {
-                        // Kết thúc giai đoạn nghỉ 15s, chuyển sang tập 45s và tăng số hiệp
                         isExercisePhase = true;
                         round++;
                         roundLabel.setText("Hiệp: " + round);
@@ -128,27 +149,26 @@ public class ExerciseTimer extends JFrame {
         });
         exerciseTimer.start();
     }
-
-    // Lớp vẽ analog clock dựa trên thời gian của giai đoạn hiện tại
+    
+    // Lớp vẽ đồng hồ kim (analog clock) dựa trên thời gian của giai đoạn hiện tại
     private class ClockPanel extends JPanel {
         public ClockPanel() {
             setPreferredSize(new Dimension(200, 200));
         }
-
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            // Tính toán kích thước và vị trí của đồng hồ
             int diameter = Math.min(getWidth(), getHeight()) - 20;
             int x = (getWidth() - diameter) / 2;
             int y = (getHeight() - diameter) / 2;
-
+            
             // Vẽ viền đồng hồ
             g.setColor(Color.BLACK);
             g.drawOval(x, y, diameter, diameter);
+            
             int centerX = getWidth() / 2;
             int centerY = getHeight() / 2;
-
+            
             // Vẽ các tick mark cho 12 giờ
             for (int i = 0; i < 12; i++) {
                 double angle = Math.toRadians((i * 30) - 90);
@@ -158,42 +178,35 @@ public class ExerciseTimer extends JFrame {
                 int outerY = centerY + (int)((diameter / 2 - 2) * Math.sin(angle));
                 g.drawLine(innerX, innerY, outerX, outerY);
             }
-
-            // Tính toán vị trí kim dựa trên thời gian của giai đoạn hiện tại:
-            // Khi mới bắt đầu (timeLeft == currentPhaseDuration) => elapsed = 0, kim ở 12h.
-            // Khi hết thời gian (timeLeft == 0) => elapsed = currentPhaseDuration, kim quay đủ 360 độ.
+            
+            // Tính toán vị trí kim dựa trên phần trăm thời gian trôi qua của giai đoạn hiện tại
             double elapsed = currentPhaseDuration - timeLeft;
             if (elapsed < 0) elapsed = 0;
             double fraction = elapsed / currentPhaseDuration;
-            // Góc tính từ vị trí 12h (-90 độ); khi fraction tăng từ 0 tới 1, kim quay đầy 360 độ
             double theta = Math.toRadians(fraction * 360 - 90);
             int handLength = diameter / 2 - 15;
             int handX = centerX + (int)(handLength * Math.cos(theta));
             int handY = centerY + (int)(handLength * Math.sin(theta));
-
-            // Vẽ kim đồng hồ màu đỏ
+            
+            // Vẽ kim đồng hồ màu đỏ và điểm trung tâm
             g.setColor(Color.RED);
             g.drawLine(centerX, centerY, handX, handY);
-            // Vẽ điểm trung tâm
             g.fillOval(centerX - 3, centerY - 3, 6, 6);
         }
     }
-
+    
     public static void main(String[] args) {
         try {
             // Áp dụng Look and Feel Windows Classic (gần giống Windows 98)
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel");
-
-            // Thiết lập font mặc định toàn cục cho giao diện
-            UIManager.put("Label.font", new Font("MS Sans Serif", Font.PLAIN, 16));
-            UIManager.put("Button.font", new Font("MS Sans Serif", Font.PLAIN, 16));
-            UIManager.put("Panel.font", new Font("MS Sans Serif", Font.PLAIN, 16));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        SwingUtilities.invokeLater(() -> {
-            ExerciseTimer frame = new ExerciseTimer();
-            frame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ExerciseTimer frame = new ExerciseTimer();
+                frame.setVisible(true);
+            }
         });
     }
 }
