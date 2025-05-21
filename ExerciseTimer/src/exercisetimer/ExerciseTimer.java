@@ -132,7 +132,8 @@ public class ExerciseTimer extends JFrame {
                 timeLeft--;
                 
                 if (timeLeft < 0) {
-                    Toolkit.getDefaultToolkit().beep();
+                    //Toolkit.getDefaultToolkit().beep();
+                    AudioPlayer.playBeep();
                     if (isExercisePhase) {
                         isExercisePhase = false;
                         currentPhaseDuration = 15;
