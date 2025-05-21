@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package exercisetimer;
 
-/**
- *
- * @author Minh Triet
- */
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -33,19 +25,19 @@ public class ExerciseTimer extends JFrame {
         // Tạo panel để hiển thị thông tin hiệp
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         roundLabel = new JLabel("Hiệp: " + round);
-        roundLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        roundLabel.setFont(new Font("MS Sans Serif", Font.BOLD, 16));
         topPanel.add(roundLabel);
         add(topPanel, BorderLayout.NORTH);
 
         // Tạo nhãn chính ở giữa để hiển thị đồng hồ đếm ngược
         timerLabel = new JLabel("45", SwingConstants.CENTER);
-        timerLabel.setFont(new Font("SansSerif", Font.BOLD, 48));
+        timerLabel.setFont(new Font("MS Sans Serif", Font.BOLD, 48));
         add(timerLabel, BorderLayout.CENTER);
 
         // Tạo panel chứa nút bắt đầu
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         startButton = new JButton("Bắt đầu");
-        startButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        startButton.setFont(new Font("MS Sans Serif", Font.BOLD, 16));
         bottomPanel.add(startButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -53,7 +45,7 @@ public class ExerciseTimer extends JFrame {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startButton.setEnabled(false); // Vô hiệu hóa nút sau khi bấm để không nhấn lại
+                startButton.setEnabled(false); // Vô hiệu hóa nút sau khi bấm
                 startTimer();
             }
         });
@@ -64,21 +56,21 @@ public class ExerciseTimer extends JFrame {
         timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Cập nhật nhãn hiển thị thời gian còn lại
+                // Cập nhật hiển thị thời gian
                 timerLabel.setText(String.valueOf(timeLeft));
                 timeLeft--;
 
                 // Khi hết thời gian của giai đoạn hiện tại
                 if (timeLeft < 0) {
-                    // Phát âm báo chuyển giao đoạn
+                    // Phát tiếng báo chuyển giao đoạn
                     Toolkit.getDefaultToolkit().beep();
 
                     if (isExercisePhase) {
-                        // Kết thúc 45s tập, chuyển sang 15s nghỉ
+                        // 45s tập kết thúc, chuyển sang 15s nghỉ
                         isExercisePhase = false;
                         timeLeft = 15;
                     } else {
-                        // Kết thúc 15s nghỉ, chuyển qua hiệp kế tiếp
+                        // 15s nghỉ kết thúc, tăng hiệp và quay lại 45s tập
                         isExercisePhase = true;
                         round++;
                         roundLabel.setText("Hiệp: " + round);
@@ -91,12 +83,18 @@ public class ExerciseTimer extends JFrame {
     }
 
     public static void main(String[] args) {
-          try {
+        try {
             // Áp dụng Look and Feel Windows Classic (gần giống Windows 98)
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel");
+
+            // Thiết lập font mặc định toàn cục cho giao diện
+            UIManager.put("Label.font", new Font("MS Sans Serif", Font.PLAIN, 16));
+            UIManager.put("Button.font", new Font("MS Sans Serif", Font.PLAIN, 16));
+            UIManager.put("Panel.font", new Font("MS Sans Serif", Font.PLAIN, 16));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
         SwingUtilities.invokeLater(() -> {
             ExerciseTimer frame = new ExerciseTimer();
             frame.setVisible(true);
