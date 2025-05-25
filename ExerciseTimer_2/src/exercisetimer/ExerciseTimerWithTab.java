@@ -112,7 +112,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
         centerPanel.add(timerLabel);
 
         // ==== Label dự tính giờ kết thúc ====
-        endTimeLabel = new JLabel("Kết thúc vào: --:--:--", SwingConstants.CENTER);
+        endTimeLabel = new JLabel("Ends at: --:--:--", SwingConstants.CENTER);
         endTimeLabel.setFont(customFontButton.deriveFont(Font.PLAIN, 18f));
         endTimeLabel.setOpaque(true);
         endTimeLabel.setBackground(new Color(224,224,224));
@@ -153,7 +153,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
             public void keyReleased(java.awt.event.KeyEvent e) {
                 totalSeconds = parseInput();
                 timerLabel.setText(formatTime(totalSeconds));
-                endTimeLabel.setText("Kết thúc vào: --:--:--");
+                endTimeLabel.setText("Ends at: --:--:--");
             }
         };
         hourInput.addKeyListener(updateTime);
@@ -186,7 +186,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
                         resetButton.setEnabled(true);
                         isCounting = false;
                         countdownTimer.stop();
-                        endTimeLabel.setText("Kết thúc vào: --:--:--");
+                        endTimeLabel.setText("Ends at: --:--:--");
                         try { AudioPlayer.playBeep(); } catch (Throwable t) {}
                     }
                 }
@@ -204,7 +204,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
                 stopButton.setEnabled(false);
                 resetButton.setEnabled(true);
                 isCounting = false;
-                endTimeLabel.setText("Kết thúc vào: --:--:--");
+                endTimeLabel.setText("Ends at: --:--:--");
             }
         });
 
@@ -215,7 +215,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
             minuteInput.setText("00");
             secondInput.setText("00");
             timerLabel.setText("00:00:00");
-            endTimeLabel.setText("Kết thúc vào: --:--:--");
+            endTimeLabel.setText("Ends at: --:--:--");
             setInputsEnabled(true);
             startButton.setEnabled(true);
             stopButton.setEnabled(false);
@@ -278,7 +278,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
         int hh = cal.get(java.util.Calendar.HOUR_OF_DAY);
         int mm = cal.get(java.util.Calendar.MINUTE);
         int ss = cal.get(java.util.Calendar.SECOND);
-        endTimeLabel.setText(String.format("Kết thúc vào: %02d:%02d:%02d", hh, mm, ss));
+        endTimeLabel.setText(String.format("Ends at: %02d:%02d:%02d", hh, mm, ss));
     }
 }
 
