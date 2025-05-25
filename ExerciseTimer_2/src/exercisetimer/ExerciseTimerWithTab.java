@@ -1,11 +1,12 @@
 package exercisetimer;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.border.BevelBorder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // Nếu chưa có FontLoader, hãy yêu cầu mình viết cho nhé
 // FontLoader.loadCustomFont("BlockCraftMedium-PVLzd.otf", size) -> Font
@@ -13,13 +14,14 @@ import javax.swing.border.BevelBorder;
 public class ExerciseTimerWithTab extends JFrame {
     public ExerciseTimerWithTab() {
         setTitle("Đồng Hồ Đếm Thời Gian");
-        setSize(540, 360);
+        setSize(540, 400); // Tăng chiều cao để chứa taskbar
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
-         setIconImage(new ImageIcon(getClass().getResource("/Icon/clock_di.png")).getImage());
+        setIconImage(new ImageIcon(getClass().getResource("/Icon/clock_di.png")).getImage());
 
-
+        // Main container
+        JPanel mainContainer = new JPanel(new BorderLayout());
         
         JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -29,7 +31,13 @@ public class ExerciseTimerWithTab extends JFrame {
         // Tab 2: Windows 98
         tabbedPane.addTab("Tab 2", new DigitalWin98Panel());
 
-        add(tabbedPane, BorderLayout.CENTER);
+        mainContainer.add(tabbedPane, BorderLayout.CENTER);
+        
+        // Thêm thanh taskbar giả Windows 98
+        Windows98Taskbar taskbar = new Windows98Taskbar();
+        mainContainer.add(taskbar, BorderLayout.SOUTH);
+        
+        add(mainContainer);
     }
 
     public static void main(String[] args) {
@@ -37,6 +45,99 @@ public class ExerciseTimerWithTab extends JFrame {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel");
         } catch (Exception e) {}
         SwingUtilities.invokeLater(() -> new ExerciseTimerWithTab().setVisible(true));
+    }
+}
+
+// =============== WINDOWS 98 TASKBAR ===============
+class Windows98Taskbar extends JPanel {
+    private JLabel timeLabel;
+    private Timer clockTimer;
+    
+    public Windows98Taskbar() {
+        setLayout(new BorderLayout());
+        setBackground(new Color(192, 192, 192));
+        setBorder(BorderFactory.createRaisedBevelBorder());
+        setPreferredSize(new Dimension(0, 32));
+        
+        // Start button
+        JButton startButton = new JButton("Start");
+        startButton.setFont(new Font("MS Sans Serif", Font.BOLD, 11));
+        startButton.setBorder(BorderFactory.createRaisedBevelBorder());
+        startButton.setBackground(new Color(192, 192, 192));
+        startButton.setPreferredSize(new Dimension(60, 28));
+        startButton.setFocusPainted(false);
+        
+        // Add mouse press effect for Start button
+        startButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                startButton.setBorder(BorderFactory.createLoweredBevelBorder());
+            }
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                startButton.setBorder(BorderFactory.createRaisedBevelBorder());
+            }
+        });
+        
+        add(startButton, BorderLayout.WEST);
+        
+        // Center panel for running programs (fake taskbar buttons)
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+        centerPanel.setBackground(new Color(192, 192, 192));
+        
+        // Fake running programs
+        JButton programButton1 = createTaskbarButton("Exercise Timer");
+        programButton1.setBackground(new Color(160, 160, 160)); // Active program
+        centerPanel.add(programButton1);
+        
+        JButton programButton2 = createTaskbarButton("Notepad");
+        centerPanel.add(programButton2);
+        
+        JButton programButton3 = createTaskbarButton("Calculator");
+        centerPanel.add(programButton3);
+        
+        add(centerPanel, BorderLayout.CENTER);
+        
+        // System tray area
+        JPanel systemTray = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+        systemTray.setBackground(new Color(192, 192, 192));
+        systemTray.setBorder(BorderFactory.createLoweredBevelBorder());
+        
+        // Clock
+        timeLabel = new JLabel();
+        timeLabel.setFont(new Font("MS Sans Serif", Font.PLAIN, 11));
+        updateTime();
+        systemTray.add(timeLabel);
+        
+        add(systemTray, BorderLayout.EAST);
+        
+        // Start clock timer
+        clockTimer = new Timer(1000, e -> updateTime());
+        clockTimer.start();
+    }
+    
+    private JButton createTaskbarButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("MS Sans Serif", Font.PLAIN, 11));
+        button.setBorder(BorderFactory.createRaisedBevelBorder());
+        button.setBackground(new Color(192, 192, 192));
+        button.setPreferredSize(new Dimension(90, 24));
+        button.setFocusPainted(false);
+        
+        // Add mouse press effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                button.setBorder(BorderFactory.createLoweredBevelBorder());
+            }
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                button.setBorder(BorderFactory.createRaisedBevelBorder());
+            }
+        });
+        
+        return button;
+    }
+    
+    private void updateTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        timeLabel.setText(sdf.format(new Date()));
     }
 }
 
@@ -405,112 +506,111 @@ class DigitalWin98Panel extends JPanel {
     }
 
     private class ClockPanelWin98 extends JPanel {
-    public ClockPanelWin98() {
-        setPreferredSize(new Dimension(200, 200));
-        setBackground(new Color(192, 192, 192)); // Gray background
-    }
+        public ClockPanelWin98() {
+            setPreferredSize(new Dimension(200, 200));
+            setBackground(new Color(192, 192, 192)); // Gray background
+        }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
 
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int w = getWidth();
-        int h = getHeight();
-        int cx = w / 2;
-        int cy = h / 2;
-        int radius = Math.min(w, h) / 2 - 18;
+            int w = getWidth();
+            int h = getHeight();
+            int cx = w / 2;
+            int cy = h / 2;
+            int radius = Math.min(w, h) / 2 - 18;
 
-        // Draw clock border
-        g2.setColor(Color.DARK_GRAY);
-        g2.setStroke(new BasicStroke(2));
-        g2.drawOval(cx - radius, cy - radius, 2 * radius, 2 * radius);
+            // Draw clock border
+            g2.setColor(Color.DARK_GRAY);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawOval(cx - radius, cy - radius, 2 * radius, 2 * radius);
 
-        // Draw minute dots
-        for (int i = 0; i < 60; i++) {
-            double angle = Math.toRadians(i * 6 - 90);
-            int x = cx + (int) ((radius - 6) * Math.cos(angle));
-            int y = cy + (int) ((radius - 6) * Math.sin(angle));
-            if (i % 5 != 0) { // minute dot
-                g2.setColor(Color.WHITE);
-                g2.fillOval(x - 2, y - 2, 4, 4);
+            // Draw minute dots
+            for (int i = 0; i < 60; i++) {
+                double angle = Math.toRadians(i * 6 - 90);
+                int x = cx + (int) ((radius - 6) * Math.cos(angle));
+                int y = cy + (int) ((radius - 6) * Math.sin(angle));
+                if (i % 5 != 0) { // minute dot
+                    g2.setColor(Color.WHITE);
+                    g2.fillOval(x - 2, y - 2, 4, 4);
+                }
             }
+
+            // Draw hour cubes
+            for (int i = 0; i < 12; i++) {
+                double angle = Math.toRadians(i * 30 - 90);
+                int x = cx + (int) ((radius - 6) * Math.cos(angle));
+                int y = cy + (int) ((radius - 6) * Math.sin(angle));
+                // 3D cube effect
+                g2.setColor(new Color(0, 180, 200)); // Cyan blue
+                g2.fillRect(x - 7, y - 7, 14, 14);
+                g2.setColor(Color.BLACK);
+                g2.drawRect(x - 7, y - 7, 14, 14);
+                g2.setColor(Color.WHITE);
+                g2.drawLine(x - 7, y - 7, x + 7, y - 7); // top highlight
+                g2.drawLine(x - 7, y - 7, x - 7, y + 7); // left highlight
+            }
+
+            // ===== Draw the hands: emulate 3D style =====
+            // Lấy thông tin giờ phút giây từ hệ thống
+            java.util.Calendar now = java.util.Calendar.getInstance();
+            int hour = now.get(java.util.Calendar.HOUR);
+            int minute = now.get(java.util.Calendar.MINUTE);
+            int second = now.get(java.util.Calendar.SECOND);
+
+            // Kim giờ: 3D
+            drawHand3D(g2, cx, cy, hour * 30 + minute / 2 - 90, radius - 60, 9, new Color(0, 180, 200));
+            // Kim phút: 3D
+            drawHand3D(g2, cx, cy, minute * 6 - 90, radius - 38, 6, new Color(0, 180, 200));
+            // Kim giây: Mảnh
+            double secAngle = Math.toRadians(second * 6 - 90);
+            int sx = cx + (int)((radius - 30) * Math.cos(secAngle));
+            int sy = cy + (int)((radius - 30) * Math.sin(secAngle));
+            g2.setColor(Color.GRAY);
+            g2.setStroke(new BasicStroke(1));
+            g2.drawLine(cx, cy, sx, sy);
+
+            // Red center dot
+            g2.setColor(Color.RED);
+            g2.fillOval(cx - 4, cy - 4, 8, 8);
+
+            g2.dispose();
         }
 
-        // Draw hour cubes
-        for (int i = 0; i < 12; i++) {
-            double angle = Math.toRadians(i * 30 - 90);
-            int x = cx + (int) ((radius - 6) * Math.cos(angle));
-            int y = cy + (int) ((radius - 6) * Math.sin(angle));
-            // 3D cube effect
-            g2.setColor(new Color(0, 180, 200)); // Cyan blue
-            g2.fillRect(x - 7, y - 7, 14, 14);
-            g2.setColor(Color.BLACK);
-            g2.drawRect(x - 7, y - 7, 14, 14);
+        // Draw a hand with 3D effect (similar to Win98)
+        private void drawHand3D(Graphics2D g2, int cx, int cy, double angleDeg, int length, int width, Color color) {
+            double angle = Math.toRadians(angleDeg);
+            double sin = Math.sin(angle);
+            double cos = Math.cos(angle);
+
+            int x1 = cx + (int)(length * cos);
+            int y1 = cy + (int)(length * sin);
+
+            // Tạo đa giác tay kim (hình thang)
+            int w2 = width / 2;
+            Polygon hand = new Polygon();
+            hand.addPoint(cx - (int)(w2 * sin), cy + (int)(w2 * cos));
+            hand.addPoint(cx + (int)(w2 * sin), cy - (int)(w2 * cos));
+            hand.addPoint(x1 + (int)(w2 * sin), y1 - (int)(w2 * cos));
+            hand.addPoint(x1 - (int)(w2 * sin), y1 + (int)(w2 * cos));
+
+            // Vẽ bóng đổ
+            Polygon shadow = new Polygon();
+            for (int i = 0; i < hand.npoints; i++) {
+                shadow.addPoint(hand.xpoints[i] + 2, hand.ypoints[i] + 2);
+            }
+            g2.setColor(new Color(100, 100, 100, 80));
+            g2.fillPolygon(shadow);
+
+            // Vẽ chính kim
+            g2.setColor(color);
+            g2.fillPolygon(hand);
             g2.setColor(Color.WHITE);
-            g2.drawLine(x - 7, y - 7, x + 7, y - 7); // top highlight
-            g2.drawLine(x - 7, y - 7, x - 7, y + 7); // left highlight
+            g2.drawPolygon(hand);
         }
-
-        // ===== Draw the hands: emulate 3D style =====
-        // Lấy thông tin giờ phút giây từ hệ thống
-        java.util.Calendar now = java.util.Calendar.getInstance();
-        int hour = now.get(java.util.Calendar.HOUR);
-        int minute = now.get(java.util.Calendar.MINUTE);
-        int second = now.get(java.util.Calendar.SECOND);
-
-        // Kim giờ: 3D
-        drawHand3D(g2, cx, cy, hour * 30 + minute / 2 - 90, radius - 60, 9, new Color(0, 180, 200));
-        // Kim phút: 3D
-        drawHand3D(g2, cx, cy, minute * 6 - 90, radius - 38, 6, new Color(0, 180, 200));
-        // Kim giây: Mảnh
-        double secAngle = Math.toRadians(second * 6 - 90);
-        int sx = cx + (int)((radius - 30) * Math.cos(secAngle));
-        int sy = cy + (int)((radius - 30) * Math.sin(secAngle));
-        g2.setColor(Color.GRAY);
-        g2.setStroke(new BasicStroke(1));
-        g2.drawLine(cx, cy, sx, sy);
-
-        // Red center dot
-        g2.setColor(Color.RED);
-        g2.fillOval(cx - 4, cy - 4, 8, 8);
-
-        g2.dispose();
     }
-
-    // Draw a hand with 3D effect (similar to Win98)
-    private void drawHand3D(Graphics2D g2, int cx, int cy, double angleDeg, int length, int width, Color color) {
-        double angle = Math.toRadians(angleDeg);
-        double sin = Math.sin(angle);
-        double cos = Math.cos(angle);
-
-        int x1 = cx + (int)(length * cos);
-        int y1 = cy + (int)(length * sin);
-
-        // Tạo đa giác tay kim (hình thang)
-        int w2 = width / 2;
-        Polygon hand = new Polygon();
-        hand.addPoint(cx - (int)(w2 * sin), cy + (int)(w2 * cos));
-        hand.addPoint(cx + (int)(w2 * sin), cy - (int)(w2 * cos));
-        hand.addPoint(x1 + (int)(w2 * sin), y1 - (int)(w2 * cos));
-        hand.addPoint(x1 - (int)(w2 * sin), y1 + (int)(w2 * cos));
-
-        // Vẽ bóng đổ
-        Polygon shadow = new Polygon();
-        for (int i = 0; i < hand.npoints; i++) {
-            shadow.addPoint(hand.xpoints[i] + 2, hand.ypoints[i] + 2);
-        }
-        g2.setColor(new Color(100, 100, 100, 80));
-        g2.fillPolygon(shadow);
-
-        // Vẽ chính kim
-        g2.setColor(color);
-        g2.fillPolygon(hand);
-        g2.setColor(Color.WHITE);
-        g2.drawPolygon(hand);
-    }
-}
-
 }
