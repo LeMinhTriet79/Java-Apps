@@ -24,10 +24,10 @@ public class ExerciseTimerWithTab extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // Tab 1: Digital (legacy)
-        tabbedPane.addTab("Digital (Legacy)", new ExerciseTimerLegacyPanel());
+        tabbedPane.addTab("Tab 1", new ExerciseTimerLegacyPanel());
 
         // Tab 2: Windows 98
-        tabbedPane.addTab("Windows 98", new DigitalWin98Panel());
+        tabbedPane.addTab("Tab 2", new DigitalWin98Panel());
 
         add(tabbedPane, BorderLayout.CENTER);
     }
