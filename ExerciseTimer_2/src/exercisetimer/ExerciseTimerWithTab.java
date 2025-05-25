@@ -42,20 +42,18 @@ public class ExerciseTimerWithTab extends JFrame {
 
 // --------------- TAB 1: DIGITAL (LEGACY, CÓ FONT & ENGLISH) -----------------
 class ExerciseTimerLegacyPanel extends JPanel {
-    private JLabel timerLabel;
+    private JLabel timerLabel, endTimeLabel;
     private JButton startButton, stopButton, resetButton;
     private JTextField hourInput, minuteInput, secondInput;
     private Timer countdownTimer;
-    private int totalSeconds;
+    private int totalSeconds = 0;
     private boolean isCounting = false;
-
     private Font customFontLabel, customFontTimer, customFontButton, customFontTitle;
 
     public ExerciseTimerLegacyPanel() {
         setLayout(new BorderLayout());
         setBackground(new Color(192,192,192));
 
-        // Font: Nếu thiếu FontLoader, nhắn thầy nhé!
         try {
             customFontLabel = FontLoader.loadCustomFont("BlockCraftMedium-PVLzd.otf", 18f);
             customFontTimer = FontLoader.loadCustomFont("BlockCraftMedium-PVLzd.otf", 76f);
@@ -76,29 +74,33 @@ class ExerciseTimerLegacyPanel extends JPanel {
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
-        // CENTER: Đồng hồ số + Input giờ/phút/giây
+        // CENTER: SET TIME + đồng hồ số lớn + thời gian kết thúc
         JPanel centerPanel = new JPanel();
         centerPanel.setBackground(new Color(224,224,224));
         centerPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 
-        // Input fields theo style Win98
-        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        // ==== Khung nhập thời gian ====
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 10));
         inputPanel.setBackground(new Color(224,224,224));
+        JLabel setLabel = new JLabel("SET TIME:");
+        setLabel.setFont(customFontLabel);
+        inputPanel.add(setLabel);
+
         hourInput = createInputField();
         minuteInput = createInputField();
         secondInput = createInputField();
-        JLabel colon1 = createColonLabel();
-        JLabel colon2 = createColonLabel();
-        inputPanel.add(new JLabel("Set: "));
+
         inputPanel.add(hourInput);
-        inputPanel.add(colon1);
+        inputPanel.add(createColonLabel());
         inputPanel.add(minuteInput);
-        inputPanel.add(colon2);
+        inputPanel.add(createColonLabel());
         inputPanel.add(secondInput);
+
+        centerPanel.add(Box.createVerticalStrut(5));
         centerPanel.add(inputPanel);
 
-        // Đồng hồ số lớn giữa
+        // ==== Đồng hồ số lớn ====
         timerLabel = new JLabel("00:00:00", SwingConstants.CENTER);
         timerLabel.setFont(customFontTimer);
         timerLabel.setForeground(Color.BLACK);
@@ -108,6 +110,17 @@ class ExerciseTimerLegacyPanel extends JPanel {
         timerLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         timerLabel.setPreferredSize(new Dimension(380, 110));
         centerPanel.add(timerLabel);
+
+        // ==== Label dự tính giờ kết thúc ====
+        endTimeLabel = new JLabel("Kết thúc vào: --:--:--", SwingConstants.CENTER);
+        endTimeLabel.setFont(customFontButton.deriveFont(Font.PLAIN, 18f));
+        endTimeLabel.setOpaque(true);
+        endTimeLabel.setBackground(new Color(224,224,224));
+        endTimeLabel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        endTimeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        endTimeLabel.setPreferredSize(new Dimension(260, 32));
+        centerPanel.add(Box.createVerticalStrut(5));
+        centerPanel.add(endTimeLabel);
 
         add(centerPanel, BorderLayout.CENTER);
 
@@ -134,7 +147,20 @@ class ExerciseTimerLegacyPanel extends JPanel {
 
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // SỰ KIỆN
+        // ==== SỰ KIỆN ====
+        // Khi nhập input: cập nhật đồng hồ lớn, KHÔNG cập nhật khung kết thúc (chỉ reset về mặc định)
+        java.awt.event.KeyAdapter updateTime = new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                totalSeconds = parseInput();
+                timerLabel.setText(formatTime(totalSeconds));
+                endTimeLabel.setText("Kết thúc vào: --:--:--");
+            }
+        };
+        hourInput.addKeyListener(updateTime);
+        minuteInput.addKeyListener(updateTime);
+        secondInput.addKeyListener(updateTime);
+
+        // Khi bấm Start
         startButton.addActionListener(e -> {
             totalSeconds = parseInput();
             if (totalSeconds <= 0) {
@@ -146,6 +172,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
             startButton.setEnabled(false);
             stopButton.setEnabled(true);
             resetButton.setEnabled(true);
+            updateEndTimeLabel(totalSeconds); // Chỉ cập nhật ở đây
             countdownTimer = new Timer(1000, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (totalSeconds > 0) {
@@ -159,6 +186,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
                         resetButton.setEnabled(true);
                         isCounting = false;
                         countdownTimer.stop();
+                        endTimeLabel.setText("Kết thúc vào: --:--:--");
                         try { AudioPlayer.playBeep(); } catch (Throwable t) {}
                     }
                 }
@@ -167,22 +195,27 @@ class ExerciseTimerLegacyPanel extends JPanel {
             countdownTimer.start();
         });
 
+        // Khi bấm Stop
         stopButton.addActionListener(e -> {
             if (countdownTimer != null && isCounting) {
                 countdownTimer.stop();
+                setInputsEnabled(true);
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
                 resetButton.setEnabled(true);
                 isCounting = false;
+                endTimeLabel.setText("Kết thúc vào: --:--:--");
             }
         });
 
+        // Khi bấm Reset
         resetButton.addActionListener(e -> {
             if (countdownTimer != null) countdownTimer.stop();
             hourInput.setText("00");
             minuteInput.setText("00");
             secondInput.setText("00");
             timerLabel.setText("00:00:00");
+            endTimeLabel.setText("Kết thúc vào: --:--:--");
             setInputsEnabled(true);
             startButton.setEnabled(true);
             stopButton.setEnabled(false);
@@ -191,7 +224,7 @@ class ExerciseTimerLegacyPanel extends JPanel {
         });
     }
 
-    // Utility: Tạo input style Win98
+    // Tạo ô nhập kiểu Win98
     private JTextField createInputField() {
         JTextField field = new JTextField("00", 2);
         field.setFont(customFontLabel);
@@ -208,16 +241,14 @@ class ExerciseTimerLegacyPanel extends JPanel {
         });
         return field;
     }
-
-    // Utility: tạo dấu :
+    // Tạo dấu ":"
     private JLabel createColonLabel() {
         JLabel label = new JLabel(":");
         label.setFont(customFontLabel);
         label.setPreferredSize(new Dimension(10, 34));
         return label;
     }
-
-    // Chuyển input thành tổng số giây
+    // Parse input thành tổng giây
     private int parseInput() {
         int h = parseNumber(hourInput.getText());
         int m = parseNumber(minuteInput.getText());
@@ -227,22 +258,29 @@ class ExerciseTimerLegacyPanel extends JPanel {
     private int parseNumber(String s) {
         try { return Integer.parseInt(s); } catch (Exception e) { return 0; }
     }
-
-    // Định dạng thành HH:MM:SS
+    // Định dạng HH:MM:SS
     private String formatTime(int totalSeconds) {
         int h = totalSeconds / 3600;
         int m = (totalSeconds % 3600) / 60;
         int s = totalSeconds % 60;
         return String.format("%02d:%02d:%02d", h, m, s);
     }
-
+    // Enable/disable các ô nhập
     private void setInputsEnabled(boolean enabled) {
         hourInput.setEnabled(enabled);
         minuteInput.setEnabled(enabled);
         secondInput.setEnabled(enabled);
     }
+    // Chỉ gọi khi bấm Start (tổng giây đã được truyền vào)
+    private void updateEndTimeLabel(int totalSeconds) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.add(java.util.Calendar.SECOND, totalSeconds);
+        int hh = cal.get(java.util.Calendar.HOUR_OF_DAY);
+        int mm = cal.get(java.util.Calendar.MINUTE);
+        int ss = cal.get(java.util.Calendar.SECOND);
+        endTimeLabel.setText(String.format("Kết thúc vào: %02d:%02d:%02d", hh, mm, ss));
+    }
 }
-
 
 // --------------- TAB 2: WINDOWS 98 (CÓ FONT & ENGLISH) -----------------
 class DigitalWin98Panel extends JPanel {
