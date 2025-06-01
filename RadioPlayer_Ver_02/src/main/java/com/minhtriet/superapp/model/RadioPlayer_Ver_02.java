@@ -29,7 +29,7 @@ public class RadioPlayer_Ver_02 extends Application {
         stations.put("BBC World Service", "http://stream.live.vc.bbcmedia.co.uk/bbc_world_service");
         stations.put("Smooth Jazz", "http://us3.internet-radio.com:8266/stream");
         stations.put("Classic FM (UK)", "http://media-ice.musicradio.com/ClassicFMMP3");
-        stations.put("VOV Giao Thông (VN)", "http://113.160.234.106:8000/giaothong");
+        stations.put("VOV Giao Thông (VN)", "http://113.160.234.106:8000/giaothonghcm");
 
         // Thanh tiêu đề kiểu Windows 98
         Label title = new Label("Windows 98 Radio Player");
